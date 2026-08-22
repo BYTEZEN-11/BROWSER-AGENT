@@ -1,0 +1,28 @@
+# Langraph Browser Agent Configuration
+# All settings can be overridden via environment variables
+
+# Model Configuration
+model: "gpt-4-turbo"
+max_tokens: 4096
+temperature: 0.1
+
+# Agent Configuration
+max_steps: 150
+start_url: "https://www.google.com"
+headless: false
+browser_args: []
+
+# Browser Interaction Settings
+screenshot_quality: 80
+typing_delay_min: 0.08
+typing_delay_max: 0.15
+scroll_amount: 500
+element_scroll_amount: 200
+wait_time: 5
+
+# Retry Configuration
+retry_attempts: 3
+retry_delay: 1.0
+
+# Logging
+log_level: "INFO"
