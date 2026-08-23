@@ -57,3 +57,4 @@ class Config:
 
 # Validate configuration on import
 Config.validate()
+
