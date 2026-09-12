@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  browser-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: langraph-browser-agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-}
+      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-langraph-browser-agent}
+      - LANGSMITH_TRACING=${LANGSMITH_TRACING:-false}
+      - BROWSER_HEADLESS=${BROWSER_HEADLESS:-true}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./mark_page.js:/app/mark_page.js:ro
+    # For headless mode, we need these capabilities
+    cap_add:
+      - SYS_ADMIN
+    # For running in headless mode with chromium
+    security_opt:
+      - seccomp:unconfined
+    # Restart policy
+    restart: unless-stopped
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # Optional: Web UI service
+  web-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: langraph-web-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - API_URL=http://browser-agent:8000
+    depends_on:
+      - browser-agent
+    restart: unless-stopped
+
+  # Optional: API service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: langraph-api
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - BROWSER_HEADLESS=true
+    depends_on:
+      - browser-agent
+    restart: unless-stopped
